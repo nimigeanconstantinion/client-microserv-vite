@@ -38,7 +38,10 @@ import Myspin from "../imagine/index";
  import spinner from "../assets/spinner.gif";
 
 
-import {ReactComponent as Spinner} from "../../Images/tube-spinner.svg";
+// import {ReactComponent as Spinner} from "../../Images/tube-spinner.svg";
+
+import {ReactComponent as Spinner} from "./spinner.gif";
+
 //  import {ReactComponent as Spinner} from "../../Images/spinner.gif";
 
 // import ripp from "../../Images/ripples.svg"
@@ -57,7 +60,8 @@ import MyTooltip from "./../OverlayMess/Index"
 import ConfirmBox from "../ConfirmBox";
 import Login from "../Login";
 import Register from "../Register";
-
+// import KeycloakLogin from "../auth/KeycloakLogin";
+import KeycloakLogin from "../auth/CustomLogin";
 
 const Homes:React.FC=()=> {
     let qMapStocList = useSelector(selectQMapStocOpt);
@@ -106,7 +110,7 @@ const Homes:React.FC=()=> {
 
     },[])
 
-    const spinimage=require("../../Images/spinner.gif")
+    // const spinimage=require("../../Images/spinner.gif")
     useEffect(()=>{
 
         console.log("Effect Pst="+pst);
@@ -659,7 +663,9 @@ const Homes:React.FC=()=> {
                     {
                         showLogin>0?(
                             <>
-                                <Login backFunction={showFirstDiv}/>
+                                {/*<Login backFunction={showFirstDiv}/>*/}
+
+                                <KeycloakLogin onCancel={()=>showFirstDiv()}/>
                             </>
                         ):""
                     }
@@ -781,16 +787,17 @@ const Homes:React.FC=()=> {
                                 <>
                                     {/*<img className={"imgspin"} src={spinner} alt={"My gif"}/>*/}
                                     {/*<img className={"imgspin"} src={spinimage}></img>*/}
-                                    <Spinner className={"spinner"} />
+                                    {/*<Spinner className={"spinner"} />*/}
 
                                     {/*<Myspin/>*/}
                                     {/*<img src={require('./spinner.gif')} alt="loading..." />*/}
+                                    {/*<p>Incarc</p>*/}
                                     {/*<img className={"imgspin"} src={spinner} alt={"My gif"}/>*/}
                                     {/*<div className={"imgspin"} role="status">*/}
                                     {/*    <span className="sr-only">Loading...</span>*/}
                                     {/*</div>*/}
                                     {/*<img className={"imgspin"} src={myimg} alt={"My gif"}/>*/}
-                                    {/*<p>Incarc.....</p>*/}
+                                    <p>Incarc.....</p>
                                 </>
                             ):(
                                 shMess?(

@@ -21,10 +21,8 @@ function App() {
                         <Route path={"/test"} element={<SpinComp/>}/>
                     </Routes>
                 </BrowserRouter>
-
             </header>
         </div>
-
     </Provider>
 
   );

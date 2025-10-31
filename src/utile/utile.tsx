@@ -1,5 +1,5 @@
 import { AppConfig } from '../models/AppConfig';
-import {getInstance} from "http-proxy-middleware/dist/logger";
+// import {getInstance} from "http-proxy-middleware/dist/logger";
 
 export async function loadConfig(): Promise<AppConfig> {
     const response = await fetch('/config/config.json');

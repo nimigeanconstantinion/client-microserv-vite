@@ -1,8 +1,11 @@
 import {configureStore} from "@reduxjs/toolkit";
-import thunk from "redux-thunk";
+// import thunk from "redux-thunk";
+import * as thunk from 'redux-thunk';
+
 import queryMapStocSlice from './queryMapStocOptim/queryMapStocOpt.reducer'
 import comMapStocSlice from './comMapStocOptim/comMapStocOptim.reducer'
 import authSlice from './authorization/auth.reducer'
+import authKeycloakSlice from "./authKeycloak/authKeycloakSlice";
 // const persistConfig = {
 //     key: 'queryMapStocState',
 //     storage,
@@ -22,9 +25,12 @@ const store=configureStore({
     reducer:{
         queryMapStocState:queryMapStocSlice,
         comMapStocState:comMapStocSlice,
-        loginAuthState:authSlice
+        loginAuthState:authSlice,
+        auth: authKeycloakSlice,
     },
-    middleware:[thunk],
+    // middleware: (getDefaultMiddleware) =>
+    //     getDefaultMiddleware().concat(thunk.default ? thunk.default : thunk),
+    devTools: true, // ✅ forțează activarea Redux DevTools
     // devTools: false
 })
 
