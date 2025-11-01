@@ -10,7 +10,7 @@
 #EXPOSE 80
 #CMD ["nginx", "-g", "daemon off;"]
 
-FROM node:18-alpine3.21
+FROM node:22-alpine3.21
 
 # Set the working directory in the container
 WORKDIR /app
