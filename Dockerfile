@@ -30,4 +30,5 @@ EXPOSE 3000
 ENV BROWSER=none
 
 # Command to start the React app
-CMD ["npm", "run dev"]
+CMD ["npm", "run", "dev", "--", "--host"]
+#CMD ["npm", "run dev"]
