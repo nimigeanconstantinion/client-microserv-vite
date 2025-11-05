@@ -2,7 +2,7 @@ import { AppConfig } from '../models/AppConfig';
 // import {getInstance} from "http-proxy-middleware/dist/logger";
 
 export async function loadConfig(): Promise<AppConfig> {
-    const response = await fetch('/config/config.json');
+    const response = await fetch('${import.meta.env.BASE_URL}config/config.json');
     console.log("****************** SUNT IN LOADcONFIG **************");
     console.log(response);
     console.log("///// raspuns");
