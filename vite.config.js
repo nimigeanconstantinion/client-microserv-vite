@@ -17,6 +17,10 @@ export default defineConfig({
   server: {
     port: 3000,     // 👈 Portul dorit
     open: true,
-    host:true// opțional, deschide browserul automat
+    host:true,// opțional, deschide browserul automat
+    allowedHosts: [
+      'localhost', // pentru rulare locală
+      'client',    // pentru rulare în container (numele serviciului)
+    ],
   },
 });
