@@ -5,7 +5,6 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-
   build: {
     outDir: 'dist/ui',
     emptyOutDir: true
@@ -18,10 +17,6 @@ export default defineConfig({
   server: {
     port: 3000,     // 👈 Portul dorit
     open: true,
-    host:true,// opțional, deschide browserul automat
-    allowedHosts: [
-      'localhost', // pentru rulare locală
-      'client',    // pentru rulare în container (numele serviciului)
-    ],
+    host:true// opțional, deschide browserul automat
   },
 });
