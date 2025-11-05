@@ -22,5 +22,7 @@ export default defineConfig({
       'localhost', // pentru rulare locală
       'client',    // pentru rulare în container (numele serviciului)
     ],
+    cors: true, // 🔓 opțional, dar util dacă faci API calls
+
   },
 });
