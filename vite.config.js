@@ -20,10 +20,10 @@ export default defineConfig({
     open: true,
     host:true,// opțional, deschide browserul automat
     allowedHosts: [
-      'localhost:5000', // pentru rulare locală
-      'localhost:3000',
-      'edge',
-      'client'// pentru rulare în container (numele serviciului)
+      'http://localhost:5000', // pentru rulare locală
+      'http://localhost:3000',
+      'http://edge',
+      'http://client'// pentru rulare în container (numele serviciului)
     ],
     cors: true, // 🔓 opțional, dar util dacă faci API calls
 
