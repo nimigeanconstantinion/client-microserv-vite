@@ -19,11 +19,11 @@ export default defineConfig({
     port: 3000,     // 👈 Portul dorit
     open: true,
     host:true,// opțional, deschide browserul automat
-    // allowedHosts: [
-    //   'localhost', // pentru rulare locală
-    //   'client',    // pentru rulare în container (numele serviciului)
-    // ],
-    // cors: true, // 🔓 opțional, dar util dacă faci API calls
+    allowedHosts: [
+      'localhost', // pentru rulare locală
+      'client',    // pentru rulare în container (numele serviciului)
+    ],
+    cors: true, // 🔓 opțional, dar util dacă faci API calls
 
   },
 });
