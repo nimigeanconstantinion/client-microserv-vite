@@ -1,8 +1,18 @@
 import { AppConfig } from '../models/AppConfig';
 // import {getInstance} from "http-proxy-middleware/dist/logger";
 
+interface ImportMetaEnv {
+    readonly VITE_API_URL: string
+    readonly VITE_APP_NAME?: string
+    // 👆 adaugă aici toate variabilele tale din .env
+}
+
+interface ImportMeta {
+    readonly env: ImportMetaEnv
+}
 export async function loadConfig(): Promise<AppConfig> {
-    const response = await fetch('${import.meta.env.BASE_URL}config/config.json');
+    console.log(import.meta.env.VITE_API_URL);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/ui/config/config.json`);
     console.log("****************** SUNT IN LOADcONFIG **************");
     console.log(response);
     console.log("///// raspuns");

@@ -5,7 +5,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/ui/',   // asta spune Vite să servească toate resursele sub /ui/
+  // base: '/ui/',   // asta spune Vite să servească toate resursele sub /ui/
   build: {
     outDir: 'dist/ui',
     emptyOutDir: true
@@ -19,12 +19,11 @@ export default defineConfig({
     port: 3000,     // 👈 Portul dorit
     open: true,
     host:true,// opțional, deschide browserul automat
-    allowedHosts: [
-      'localhost', // pentru rulare locală
-      'client',    // pentru rulare în container (numele serviciului)
-      'localhost:5000'
-    ],
-    cors: true, // 🔓 opțional, dar util dacă faci API calls
+    // allowedHosts: [
+    //   'localhost', // pentru rulare locală
+    //   'client',    // pentru rulare în container (numele serviciului)
+    // ],
+    // cors: true, // 🔓 opțional, dar util dacă faci API calls
 
   },
 });
