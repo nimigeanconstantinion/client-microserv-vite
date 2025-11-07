@@ -11,8 +11,8 @@ interface ImportMeta {
     readonly env: ImportMetaEnv
 }
 export async function loadConfig(): Promise<AppConfig> {
-    console.log(import.meta.env.VITE_API_URL);
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/ui/config/config.json`);
+    console.log(import.meta.env.REACT_APP_API_URL);
+    const response = await fetch(`${import.meta.env.REACT_APP_API_URL}/ui/config/config.json`);
     console.log("****************** SUNT IN LOADcONFIG **************");
     console.log(response);
     console.log("///// raspuns");
