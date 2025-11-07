@@ -16,17 +16,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,     // 👈 Portul dorit
-    open: true,
-    host:true,// opțional, deschide browserul automat
+    port: 3000,
+    host: '0.0.0.0', // ✅ permite acces din rețeaua Docker și local
+    cors: true,       // ✅ necesar pentru cereri între gateway/client
     allowedHosts: [
-      'localhost:5000', // pentru rulare locală
-      'localhost:3000',
-      'edge',
-      'client'
-//VITE_API_URL=http://edge:5000pentru rulare în container (numele serviciului)
+      'localhost', // ✅ nu pune portul, doar hostul!
+      '127.0.0.1',
+      'client',    // ✅ numele serviciului Docker pentru frontend
+      'edge'       // ✅ numele serviciului gateway Spring
     ],
-    cors: true, // 🔓 opțional, dar util dacă faci API calls
-
   },
 });
