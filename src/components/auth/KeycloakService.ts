@@ -1,8 +1,9 @@
 //@ts-ignore
 import Keycloak from "keycloak-js";
 
+
 const keycloak = new Keycloak({
-    url: "http://localhost:8085/",
+    url: `${import.meta.env.VITE_KEYCLOAK_SERVER_API_URL}/`,
     realm: "rsk",
     clientId: "react-client",
 });
