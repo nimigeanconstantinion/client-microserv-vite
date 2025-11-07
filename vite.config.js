@@ -22,8 +22,8 @@ export default defineConfig({
     allowedHosts: [
       'localhost:5000', // pentru rulare locală
       'localhost:3000',
-      'edge:5000',
-      'client:3000'
+      'edge',
+      'client'
 //VITE_API_URL=http://edge:5000pentru rulare în container (numele serviciului)
     ],
     cors: true, // 🔓 opțional, dar util dacă faci API calls
