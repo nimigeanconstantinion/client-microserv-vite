@@ -64,7 +64,7 @@ export default class Api{
             console.log("^^^^^^ din getBaseURL");
             console.log(response);
             console.log("======================______=======================");
-            return response.REACT_APP_API_URL;
+            return response.VITE_APP_API_URL;
         }catch (e) {
             return Promise.reject("Error");
         }
