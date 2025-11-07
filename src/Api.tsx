@@ -10,15 +10,7 @@ import {loadConfig} from "./utile/utile";
 export default class Api{
 
    async api<T, U>(path: string, method = "GET", body: U,token:string|null): Promise<HttpResponse<T>> {
-        // --------------------asta era necom
-        // // const url="http://34.247.255.42:5000/server"+path;
 
-
-        //
-        // let basepath=process.env.REACT_APP_API_URL
-        // console.log("---BASEPATH="+basepath);
-
-        //  const url= 'http://localhost:5000/server'+ path;
         // -----------------------------------------------------
         let basepath=await this.getBaseURL();
         console.log("Am obtinut baseurl="+basepath)
@@ -58,7 +50,7 @@ export default class Api{
 
 
     getBaseURL=async () =>{
-
+        console.log("--------------IN GETBASEURL")
         try {
             let response = await loadConfig();
             console.log("^^^^^^ din getBaseURL");

@@ -16,7 +16,7 @@
     "@mui/icons-material": "^6.1.2",
     "@reduxjs/toolkit": "^2.2.7",
     "bootstrap": "^5.3.3",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "keycloak-js": "^26.2.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.3.1",
@@ -49,6 +49,7 @@
       "last 1 safari version"
     ]
   },
-  "include": ["src"]
-
+  "include": [
+    "src"
+  ]
 }
