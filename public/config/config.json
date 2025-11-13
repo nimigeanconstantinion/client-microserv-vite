@@ -1,5 +1,5 @@
 {
   "BASE_URL": "http://localhost",
   "REACT_APP_API_URL": "http://localhost:5000",
-  "VITE_APP_API_URL": "http://edge"
+  "VITE_APP_API_URL": "http://edge:5000"
 }

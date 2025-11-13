@@ -1,9 +1,9 @@
 //@ts-ignore
 import Keycloak from "keycloak-js";
-
+import {} from "dotenv";
 
 const keycloak = new Keycloak({
-    url: "http://localhost:8085/",
+    url: `${import.meta.env.VITE_KEYCLOAK_URL}`,
     realm: "rsk",
     clientId: "react-client",
 });
@@ -32,8 +32,8 @@ export const KeycloakService = {
             params.append("client_id", "react-client");
             params.append("username", username);
             params.append("password", password);
-
-            const response = await fetch("http://localhost:8085/realms/rsk/protocol/openid-connect/token", {
+            console.log("URL din KeycloakService: "+import.meta.env.VITE_KEYCLOAK_URL);
+            const response = await fetch(`${import.meta.env.VITE_KEYCLOAK_URL}/realms/rsk/protocol/openid-connect/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params,
@@ -62,7 +62,7 @@ export const KeycloakService = {
             adminParams.append("username", "admin");
             adminParams.append("password", "admin"); // pune parola reală de admin
 
-            const adminTokenResp = await fetch("http://localhost:8085/realms/master/protocol/openid-connect/token", {
+            const adminTokenResp = await fetch("${import.meta.env.VITE_KEYCLOAK_URL}/realms/master/protocol/openid-connect/token", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: adminParams,
@@ -76,7 +76,7 @@ export const KeycloakService = {
             const { access_token } = await adminTokenResp.json();
 
             // Creare utilizator nou
-            const createResp = await fetch("http://localhost:8085/admin/realms/rsk/users", {
+            const createResp = await fetch("${import.meta.env.VITE_KEYCLOAK_URL}/admin/realms/rsk/users", {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${access_token}`,
@@ -106,6 +106,6 @@ export const KeycloakService = {
     logout: async () => {
         localStorage.removeItem("kc_token");
         window.location.href =
-            "http://localhost:8085/realms/rsk/protocol/openid-connect/logout?redirect_uri=http://localhost:5000/ui";
+            "${import.meta.env.VITE_KEYCLOAK_URL}/realms/rsk/protocol/openid-connect/logout?redirect_uri=http://localhost:5000/ui";
     },
 };
