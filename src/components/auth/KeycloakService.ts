@@ -1,6 +1,7 @@
-//@ts-ignore
+// @ts-ignore
 import Keycloak from "keycloak-js";
 import {} from "dotenv";
+
 
 const keycloak = new Keycloak({
     url: `${import.meta.env.VITE_KEYCLOAK_URL}`,

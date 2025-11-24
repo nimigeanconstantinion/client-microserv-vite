@@ -24,6 +24,7 @@ export default class Api{
 
        const url= basepath+"/server"+path;
 
+       // const url= "http://nserver:8083/api/v1/server"+path;
 
        // const url=basepath+"/server"+path;
         // const url= basepath+"/server"+ path;
@@ -45,6 +46,7 @@ export default class Api{
                 Authorization: `Bearer `+token,
             };
         }
+        console.log("Token="+token);
         return fetch(url, options)
     }
 
