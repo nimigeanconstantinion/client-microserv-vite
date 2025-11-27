@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { KeycloakService } from './KeycloakService';
+// import { KeycloakService } from './KeycloakService';
+import {KeycloakServices} from "./KeycloakServices";
 import {WrapperKclLogin} from "./indexStyle";
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/authKeycloak/authKeycloakSlice';
@@ -9,6 +10,9 @@ import MessageBox from "../MessageBox";
 import Spinner from '../NewSpin/index';
 
 import spinnerGif from "../assets/spinner.gif";
+import { keycloakServices } from "./KeycloakServices";
+import { keycloakServicex } from "./KeycloakServicex";
+
 import {loadAuthUser, loadToken, loginSucces} from "../../store/authorization/auth.reducer";
 import User from "../../models/User"; // calea către GIF-ul tău
 
@@ -34,9 +38,17 @@ const CustomLogin: React.FC<CustomLoginProps> = ({ onCancel }) => {
         setError('');
 
         try {
-            const token = await KeycloakService.loginDirect(username, password);
-            console.log("Dupa await token");
+            // let token = await KeycloakServices.loginDirect(username, password);
+            console.log("INNNNNNNNN")
+            //  const auth=await ksrv.loginDirect(username,password);
+            const auth=await keycloakServicex.loginDirect(username,password);
+            console.log("After-----------------------------")
+            console.log(auth);
+            const token=auth.token;
+            // console.log("Dupa await token");
+            console.log(token);
             if (token) {
+
                     console.log('Login successful', token);
 
                     // const userInfo = await KeycloakService.keycloak?.loadUserInfo();
