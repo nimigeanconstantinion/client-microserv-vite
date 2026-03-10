@@ -1,34 +1,23 @@
+# imagine mică, stabilă
+FROM node:22-alpine3.19
 
-#FROM node:17.1-alpine as build-stage
-#WORKDIR /app
-#COPY package*.json ./
-#RUN npm install
-#COPY . .
-#RUN npm run build
-#FROM nginx:1.22.1-alpine as prod-stage
-#COPY --from=build-stage /app/build /usr/share/nginx/html
-#EXPOSE 80
-#CMD ["nginx", "-g", "daemon off;"]
-
-FROM node:22-alpine3.21
-
-# Set the working directory in the container
+# directorul de lucru
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the container
+# copiem doar fișierele pentru instalarea dependențelor
 COPY package*.json ./
 
-# Install dependencies
+# instalăm dependențele
 RUN npm install --legacy-peer-deps
 
-# Copy the rest of the application files to the container
+# copiem restul proiectului
 COPY . .
 
-# Expose the port on which the app runs
+# React/Vite rulează pe port 3000
 EXPOSE 3000
 
-ENV BROWSER=none
+# pentru vite, permite acces din exterior
+ENV HOST=0.0.0.0
 
-# Command to start the React app
+# comanda de development
 CMD ["npm", "run", "dev", "--", "--host"]
-#CMD ["npm", "run dev"]

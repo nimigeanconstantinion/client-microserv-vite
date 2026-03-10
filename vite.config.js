@@ -5,7 +5,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  // base: '/ui/',   // asta spune Vite să servească toate resursele sub /ui/
+  base: '/ui/',   // asta spune Vite să servească toate resursele sub /ui/
   build: {
     outDir: 'dist/ui',
     emptyOutDir: true
@@ -22,8 +22,10 @@ export default defineConfig({
     allowedHosts: [
       'localhost', // ✅ nu pune portul, doar hostul!
       '127.0.0.1',
+      "host.docker.internal",
       'client',    // ✅ numele serviciului Docker pentru frontend
-      'edge'       // ✅ numele serviciului gateway Spring
+      'edge',
+      'react-app.local'// ✅ numele serviciului gateway Spring
     ],
   },
 });

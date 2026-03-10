@@ -6,20 +6,36 @@ if not defined SERVICE_VERSION (
     exit /b 1
 )
 
-echo Building Docker image...
-docker build -f Dockerfile -t client-service:%SERVICE_VERSION% .
+echo ============================================
+echo Removing old buildx builders...
+echo ============================================
+docker buildx rm multiarchbuilder 2>nul
+docker buildx rm multiarchbuilder0 2>nul
 
-echo Getting the new image ID...
-setlocal enabledelayedexpansion
-for /f "tokens=*" %%i in ('docker images -q command-service:%SERVICE_VERSION%') do set IMAGE_ID=%%i
-echo New image ID: !IMAGE_ID!
-endlocal
+echo ============================================
+echo Creating new multiarch builder (docker-container)...
+echo ============================================
+docker buildx create --name multiarchbuilder --use --driver docker-container
+docker buildx inspect --bootstrap
 
-echo Tagging the image...
-docker tag client-service:%SERVICE_VERSION%  ion21/client-service:%SERVICE_VERSION%
+echo ============================================
+echo Building multi-architecture Docker image...
+echo Platforms: linux/amd64, linux/arm64
+echo Tags: %SERVICE_VERSION%, latest
+echo ============================================
 
-echo Pushing the tagged image...
-docker push  ion21/client-service:%SERVICE_VERSION%
+docker buildx build ^
+  --platform linux/amd64,linux/arm64 ^
+  -f Dockerfile ^
+  -t ion21/client-vite:%SERVICE_VERSION% ^
+  -t ion21/client-vite:latest ^
+  --push .
 
-echo Script completed.
+echo ============================================
+echo Build & Push DONE
+echo Images pushed:
+echo   ion21/client-vite:%SERVICE_VERSION%
+echo   ion21/client-vite:latest
+echo ============================================
+
 pause

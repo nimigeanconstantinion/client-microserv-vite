@@ -792,12 +792,12 @@ const Homes:React.FC=()=> {
                                     {/*<Myspin/>*/}
                                     {/*<img src={require('./spinner.gif')} alt="loading..." />*/}
                                     {/*<p>Incarc</p>*/}
-                                    {/*<img className={"imgspin"} src={spinner} alt={"My gif"}/>*/}
+                                    <img className={"imgspin"} src={spinner} alt={"My gif"}/>
                                     {/*<div className={"imgspin"} role="status">*/}
                                     {/*    <span className="sr-only">Loading...</span>*/}
                                     {/*</div>*/}
                                     {/*<img className={"imgspin"} src={myimg} alt={"My gif"}/>*/}
-                                    <p>Incarc.....</p>
+                                    {/*<p>Incarc.....</p>*/}
                                 </>
                             ):(
                                 shMess?(

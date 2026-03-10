@@ -1,4 +1,5 @@
 import Keycloak, { KeycloakProfile } from "keycloak-js";
+import User from "../../models/User";
 
 export interface AuthState {
     isLoading: boolean;
@@ -10,11 +11,10 @@ export interface AuthState {
 }
 
 export class KeycloakServicex {
-    // Keycloak va fi inițializat în constructor sau ca proprietate
     keycloak: Keycloak;
+    initialized: boolean = false;
 
     constructor() {
-        // ❗ Asigură-te că ENV-ul VITE_KEYCLOAK_URL este încărcat corect
         if (!import.meta.env.VITE_KEYCLOAK_URL) {
             throw new Error("VITE_KEYCLOAK_URL is not defined in .env");
         }
@@ -22,18 +22,30 @@ export class KeycloakServicex {
         this.keycloak = new Keycloak({
             url: import.meta.env.VITE_KEYCLOAK_URL,
             realm: "rsk",
-            clientId: "react-client", // direct string
+            clientId: "react-client",
         });
     }
 
     // Inițializare Keycloak
     async init(): Promise<AuthState> {
+        if (this.initialized) {
+            const tokenParsed = this.keycloak.tokenParsed as any;
+            return {
+                isLoading: false,
+                isAuthenticated: !!this.keycloak.authenticated,
+                profile: tokenParsed ? { username: tokenParsed.preferred_username } as KeycloakProfile : undefined,
+                token: this.keycloak.token,
+                roles: tokenParsed?.realm_access?.roles || [],
+            };
+        }
+
         try {
             const authenticated = await this.keycloak.init({
                 onLoad: "check-sso",
                 pkceMethod: "S256",
-                // silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
             });
+
+            this.initialized = true;
 
             if (!authenticated) {
                 return { isLoading: false, isAuthenticated: false };
@@ -41,10 +53,8 @@ export class KeycloakServicex {
 
             const profile = await this.keycloak.loadUserProfile();
             const tokenParsed = this.keycloak.tokenParsed as any;
-
-            const realmRoles: string[] = tokenParsed?.realm_access?.roles || [];
-            const clientRoles: string[] =
-                tokenParsed?.resource_access?.[this.keycloak.clientId!]?.roles || [];
+            const realmRoles = tokenParsed?.realm_access?.roles || [];
+            const clientRoles = tokenParsed?.resource_access?.[this.keycloak.clientId!]?.roles || [];
 
             const state: AuthState = {
                 isLoading: false,
@@ -61,19 +71,15 @@ export class KeycloakServicex {
         }
     }
 
-    // Login direct prin grant_type=password
+    // Login direct cu grant_type=password
     async loginDirect(username: string, password: string): Promise<AuthState> {
         try {
             const params = new URLSearchParams();
             params.append("grant_type", "password");
-            params.append("client_id", "react-client"); // direct, nu this.keycloak.clientId
+            params.append("client_id", "react-client");
             params.append("scope", "openid email profile");
             params.append("username", username);
             params.append("password", password);
-
-            console.log("URL:", `${import.meta.env.VITE_KEYCLOAK_URL}/realms/rsk/protocol/openid-connect/token`);
-            console.log("Params:", params.toString());
-
 
             const response = await fetch(
                 `${import.meta.env.VITE_KEYCLOAK_URL}/realms/rsk/protocol/openid-connect/token`,
@@ -89,27 +95,15 @@ export class KeycloakServicex {
             }
 
             const data = await response.json();
-            console.log(data)
-
             const decode = (token: string) => JSON.parse(atob(token.split(".")[1]));
             const tokenParsed = decode(data.access_token);
-            console.log("hlkhlhlkhlhlhhlhl")
-            console.log(tokenParsed)
-            console.log("-----------------------------------------")
-
             const refreshParsed = data.refresh_token ? decode(data.refresh_token) : undefined;
-            console.log(refreshParsed)
 
-            // console.log("refreshParsed-----------------------------------------")
-
-            // Setare manuală a token-urilor în keycloak-js
+            // Setare manuală token-uri în KeycloakJS
             this.keycloak.token = data.access_token;
             this.keycloak.tokenParsed = tokenParsed;
             this.keycloak.refreshToken = data.refresh_token;
             this.keycloak.refreshTokenParsed = refreshParsed;
-
-
-            // const tokenParsed = this.keycloak.tokenParsed as any;
 
             const profile = {
                 username: tokenParsed.preferred_username,
@@ -121,18 +115,8 @@ export class KeycloakServicex {
                     ...(tokenParsed.resource_access?.[this.keycloak.clientId!]?.roles || [])
                 ]
             };
-
-            // console.log("Profile built from token:", profile);
-            // const profile = await this.keycloak.loadUserProfile();
-
-
-            // console.log("======-----------------------------------------")
-
-            // console.log(profile);
-            // console.log("---------------========-----------------------------------")
             const realmRoles = tokenParsed?.realm_access?.roles || [];
-            const clientRoles =
-                tokenParsed?.resource_access?.[this.keycloak.clientId!]?.roles || [];
+            const clientRoles = tokenParsed?.resource_access?.[this.keycloak.clientId!]?.roles || [];
 
             const state: AuthState = {
                 isLoading: false,
@@ -143,13 +127,42 @@ export class KeycloakServicex {
             };
 
             localStorage.setItem("authState", JSON.stringify(state));
-            console.log(state);
             return state;
-        } catch (err) {
-            return { isLoading: false, isAuthenticated: false, error: "Login error"+err };
+        } catch (err: any) {
+            return { isLoading: false, isAuthenticated: false, error: "Login error: " + err.message };
         }
+    }
+
+    // Redirect către pagina de register Keycloak
+    registerWithRedirect(username:string,email:string): void {
+        if (!this.initialized) {
+            console.error("Keycloak must be initialized before register");
+            return;
+        }
+
+        if (this.keycloak.authenticated) {
+            // Logout și redirect către homepage
+            this.keycloak.logout({ redirectUri: window.location.origin });
+            return;
+        }
+
+        const redirectUri = "http://localhost:3000/ui";
+
+
+        // Redirect către pagina de register
+        this.keycloak.login({
+            action: "register",
+            redirectUri,
+            // @ts-ignore
+
+            extraQueryParams: {
+                username,
+                email
+            }
+
+        });
     }
 }
 
-// Exportăm o singură instanță globală
+// Export instanță globală
 export const keycloakServicex = new KeycloakServicex();

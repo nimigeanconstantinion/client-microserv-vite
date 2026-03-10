@@ -6,6 +6,7 @@ import User from "./models/User";
 // let env = getEnvVariables();
 import {AppConfig} from "./models/AppConfig";
 import {loadConfig} from "./utile/utile";
+import RegisterUser from "./models/RegisterUser";
 
 export default class Api{
 
@@ -31,6 +32,7 @@ export default class Api{
 
         //
         console.log("URL DE INTEROGARE="+url);
+        console.log("###############################################################")
         const options: RequestInit = {
             method,
             mode:"cors",
@@ -60,7 +62,7 @@ export default class Api{
             console.log("^^^^^^ din getBaseURL");
             console.log(response);
             console.log("======================______=======================");
-            return response.VITE_APP_API_URL;
+            return response.VITE_API_URL;
         }catch (e) {
             return Promise.reject("Error");
         }
@@ -97,6 +99,24 @@ export default class Api{
 
         if(data.status===200){
             return await data.json();
+        }else {
+            return Promise.reject([]);
+        }
+
+    }
+
+
+    registerUser = async (newUser:RegisterUser): Promise<String> => {
+
+        // let data = await this.api("/comallmap", "GET", null,tokenString);
+        let data = await this.api("/auth/register", "POST", newUser,null);
+
+        console.log("Raspuns din API");
+        console.log(data);
+        console.log("--------------------------------");
+
+        if(data.status===200){
+            return "OK REGISTER";
         }else {
             return Promise.reject([]);
         }
@@ -148,9 +168,12 @@ export default class Api{
     login=async (user:User):Promise<User>=>{
         // let x=loadConfig()
         console.log("La LOGIN cu ");
-            // console.log(globalConfig!.apiUrl);
+        // console.log(globalConfig!.apiUrl);
         let response:HttpResponse<string>=await this.api("/login","POST", user,null);
         // let response:HttpResponse<string>=await this.api("http://localhost:8080/api/v1/server/login","POST", user,null);
+
+        console.log(response);
+
 
         if(response.status===200){
 
