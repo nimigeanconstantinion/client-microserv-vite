@@ -62,6 +62,9 @@ import Login from "../Login";
 import Register from "../Register";
 // import KeycloakLogin from "../auth/KeycloakLogin";
 import KeycloakLogin from "../auth/CustomLogin";
+import {keycloakServicex} from "../auth/KeycloakServicex";
+// import {KeycloakServices} from "../auth/KeycloakServices";
+
 
 const Homes:React.FC=()=> {
     let qMapStocList = useSelector(selectQMapStocOpt);
@@ -534,6 +537,21 @@ const Homes:React.FC=()=> {
 
     }
 
+    // let registerThis=()=>{
+    //     console.log("In Register button");
+    //     keycloakServicex.register();
+    // }
+
+    const handleRegisterClick = () => {
+        console.log("In handle click:");
+        console.log("Serviciu:", keycloakServicex.keycloak);
+        keycloakServicex.register();
+
+        // ks.register();
+    };
+
+
+
     function showFirstDiv() {
         const cntList=document.getElementsByClassName("serv");
         const servC=cntList[0] as HTMLElement;
@@ -760,7 +778,8 @@ const Homes:React.FC=()=> {
                                 </div>
                                 <div className={"dbackqLogin cmddiv"}>
                                     <div className={"card-header"}>Regsiter Action</div>
-                                    <button type={"button"} className={"btn btn-success"} onClick={()=>hideThis(1)}>Register</button>
+                                    {/*<button type={"button"} className={"btn btn-success"} onClick={()=>hideThis(1)}>Register</button>*/}
+                                    <button type={"button"} className={"btn btn-success"} onClick={handleRegisterClick}>Register</button>
 
                                 </div>
                             </div>

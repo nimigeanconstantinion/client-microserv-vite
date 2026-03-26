@@ -1,5 +1,7 @@
-import Keycloak, { KeycloakProfile } from "keycloak-js";
+// import Keycloak, { Key?cloakProfile } from "keycloak-js";
 import User from "../../models/User";
+import Keycloak from "keycloak-js";
+import type { KeycloakProfile } from "keycloak-js"; // Profile rămâne cu acolade dacă e tip
 
 export interface AuthState {
     isLoading: boolean;
@@ -18,12 +20,14 @@ export class KeycloakServicex {
         if (!import.meta.env.VITE_KEYCLOAK_URL) {
             throw new Error("VITE_KEYCLOAK_URL is not defined in .env");
         }
-
+        console.log("URL"+import.meta.env.VITE_KEYCLOAK_URL)
         this.keycloak = new Keycloak({
             url: import.meta.env.VITE_KEYCLOAK_URL,
             realm: "rsk",
             clientId: "react-client",
         });
+
+
     }
 
     // Inițializare Keycloak
@@ -43,6 +47,7 @@ export class KeycloakServicex {
             const authenticated = await this.keycloak.init({
                 onLoad: "check-sso",
                 pkceMethod: "S256",
+                silentCheckSsoRedirectUri: window.location.origin + "/ui/silent-check-sso.html",
             });
 
             this.initialized = true;
@@ -161,6 +166,66 @@ export class KeycloakServicex {
             }
 
         });
+    }
+
+    forceLogoutAndRegister = (): void => {
+        const realm = "rsk";
+        const clientId = "react-client";
+
+        // Calculăm URL-ul direct aici pentru a fi siguri că nu e undefined
+        const currentOrigin = window.location.origin; // ex: http://localhost:3000
+        const finalRedirect = currentOrigin + "/ui/";
+
+        // Construim URL-ul de logout
+        const logoutUrl = `${import.meta.env.VITE_KEYCLOAK_URL}/realms/${realm}/protocol/openid-connect/logout?client_id=${clientId}&post_logout_redirect_uri=${encodeURIComponent(finalRedirect)}`;
+
+        console.log("Redirecting to:", logoutUrl); // Verifică în consolă dacă acum e corect!
+
+        localStorage.removeItem("authState");
+        this.initialized = false;
+
+        window.location.href = logoutUrl;
+    };
+
+    /**
+     * Metoda principală de înregistrare
+     */
+    register = async (): Promise<void> => {
+        console.log("Stare înainte de orice:", this.initialized);
+
+        // 1. DACĂ NU ESTE INIȚIALIZAT, ÎL INIȚIALIZĂM ACUM
+        if (!this.initialized) {
+            console.log("Keycloak nu e gata. Inițializez acum...");
+            try {
+                await this.init(); // Aceasta va seta this.initialized = true
+            } catch (e) {
+                console.error("Inițializarea a eșuat în interiorul register:", e);
+                return;
+            }
+        }
+
+        // 2. ACUM PUTEM VERIFICA DACĂ E AUTENTIFICAT
+        if (this.keycloak.authenticated) {
+            console.warn("Utilizator logat. Curățăm sesiunea...");
+            // Folosim direct window.location pentru a evita alte erori de context
+            const redirect = window.location.origin + "/ui/";
+            await this.keycloak.logout({ redirectUri: redirect });
+            return;
+        }
+
+        // 3. LANSARE FORMULAR (Acum this.keycloak.login VA EXISTA sigur)
+        try {
+            console.log("Lansăm formularul de înregistrare oficial...");
+            const finalRedirectUri = window.location.origin + "/ui/";
+
+            await this.keycloak.login({
+                action: 'register',
+                redirectUri: finalRedirectUri,
+                prompt: 'login'
+            });
+        } catch (error) {
+            console.error("Eroare la apelul login:", error);
+        }
     }
 }
 

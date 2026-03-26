@@ -172,34 +172,34 @@ const Register:React.FC<LoginProp>=({backFunction}) => {
         // let userEmail=document.getElementById("inputEml")?.innerText?document.getElementById("inputEml")!.innerText:'';
         //
         // keycloakServicex.registerWithRedirect(userName,userEmail);
-        let api=new Api();
-        if(usr){
-            try{
-                let response=await api.registerUser(usr);
-
-                if(response.includes("OK REGI")){
-                        SetMsgTrigger(1);
-                        SetTypeMsg("alert-success");
-                        SetMsg("Successfully register "+usr.firstName+" "+usr.lastName+"! Try Login NOW!");
-                        SetMsgTitle("Succes!")
-                        SetShowMsg(true);
-                        setTimeout(()=>{
-                            SetShowMsg(false);
-                            backFunction();
-                        },1200)                }
-
-            }catch (e){
-                SetMsgTrigger(1);
-                SetTypeMsg("alert-warning");
-                SetMsg("Login Fail! Please Retry!");
-                SetMsgTitle("Warning!")
-                SetShowMsg(true);
-                setTimeout(()=>{
-                    SetShowMsg(false);
-                    backFunction();
-                },1200)
-
-            }
+        // let api=new Api();
+        // if(usr){
+        //     try{
+        //         let response=await api.registerUser(usr);
+        //
+        //         if(response.includes("OK REGI")){
+        //                 SetMsgTrigger(1);
+        //                 SetTypeMsg("alert-success");
+        //                 SetMsg("Successfully register "+usr.firstName+" "+usr.lastName+"! Try Login NOW!");
+        //                 SetMsgTitle("Succes!")
+        //                 SetShowMsg(true);
+        //                 setTimeout(()=>{
+        //                     SetShowMsg(false);
+        //                     backFunction();
+        //                 },1200)                }
+        //
+        //     }catch (e){
+        //         SetMsgTrigger(1);
+        //         SetTypeMsg("alert-warning");
+        //         SetMsg("Login Fail! Please Retry!");
+        //         SetMsgTitle("Warning!")
+        //         SetShowMsg(true);
+        //         setTimeout(()=>{
+        //             SetShowMsg(false);
+        //             backFunction();
+        //         },1200)
+        //
+        //     }
             // let response=await api.registerUser(usr)
             // console.log(response);
             // if(response){
@@ -227,7 +227,8 @@ const Register:React.FC<LoginProp>=({backFunction}) => {
             // setTimeout(()=>{
             //     backFunction();
             // },1300)
-        }
+        // }
+
 
     };
 

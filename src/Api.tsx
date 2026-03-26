@@ -19,7 +19,7 @@ export default class Api{
         console.log(basepath);
         if (!basepath) {
             console.log("++ Nu aveam basepath")
-            basepath = "http://localhost:5000"; // fallback if config fails
+            basepath = "http://localhost/kong"; // fallback if config fails
         }
         // basepath="http://react-app.local";
 
@@ -142,6 +142,7 @@ export default class Api{
         // let data = await this.api("/upd", "POST", newProd,tokenString);
         let data = await this.api("/command/update", "POST", newProd,tokenString);
 
+
         if(data.status===200){
             return data.json();
         }else {
@@ -187,7 +188,7 @@ export default class Api{
 
     register=async (user:User):Promise<string>=>{
         let response:HttpResponse<string>=await this.api<string,User>("/register","POST", user,null);
-
+        alert("INNNNNNNN REGISTER")
         if(response.status===200){
 
             return response.text();
