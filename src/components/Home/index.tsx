@@ -29,6 +29,8 @@ import {
     retrieveMapStocListSucces,
     setTotalObjects
 } from "../../store/queryMapStocOptim/queryMapStocOpt.reducer";
+import {loadAuthUser, loadToken, loginFail, loginRequest, loginSucces} from "../../store/authorization/auth.reducer"
+
 import store from "../../store/store";
 import myImg from "./spinner.gif"
 // require('../../Images/spinner.gif');
@@ -63,10 +65,18 @@ import Register from "../Register";
 // import KeycloakLogin from "../auth/KeycloakLogin";
 import KeycloakLogin from "../auth/CustomLogin";
 import {keycloakServicex} from "../auth/KeycloakServicex";
+// import {myKeycloakService} from "../auth/MyKeycloakService";
+// import {AuthState} from "../auth/KeycloakServices";
 // import {KeycloakServices} from "../auth/KeycloakServices";
+import { myKeycloakService, AuthState } from "../auth/MyKeycloakService";
+import User from "../../models/User";
+// Importă acțiunile tale de Redux
+// import { loadToken, loadAuthUser, loginSucces } from "./store/actions";
+interface HomeProps{
+    auth:AuthState;
+}
 
-
-const Homes:React.FC=()=> {
+const Homes:React.FC<HomeProps>=( { auth }: HomeProps)=> {
     let qMapStocList = useSelector(selectQMapStocOpt);
     let cMapStocList=useSelector(loadCMDMap);
     let myToken=useSelector(selLoadAuthToken);
@@ -124,6 +134,57 @@ const Homes:React.FC=()=> {
         console.log("Effect PsFF="+psf);
 
     },[psf])
+
+
+    // Am pus un effect pe auth
+    useEffect(() => {
+        // Dacă tocmai s-a logat și avem profilul încărcat
+        if (auth.isAuthenticated && auth.profile) {
+
+            // 1. Mapăm profilul Keycloak pe modelul tău de User
+            const authUser:User = {
+              name: auth.profile.firstName+' '+auth.profile.lastName,
+              email: auth.profile.email? auth.profile.email:"",
+              password: '',
+              role: 'USER',
+              token:auth.token? auth.token:"",
+
+            };
+            // name: auth.profile.username: auth.profile.username"",
+            //     email: auth!.profile!.email,
+            //     password: "",
+            //     role: "USER",
+            //     token: auth.token,
+
+            // 2. Dispatch către Redux (exact ce aveai în metoda veche)
+            if (auth.token) {
+                dispatch(loadToken(auth.token));
+            }
+            dispatch(loadAuthUser(authUser));
+            dispatch(loginSucces());
+
+            // 3. Afișare Mesaj de Succes (dacă e prima dată când intră logat)
+            // Putem folosi un flag în sessionStorage ca să nu apară mesajul la fiecare refresh
+            const hasShownWelcome = sessionStorage.getItem("welcome_shown");
+
+            if (!hasShownWelcome) {
+                // SetMsgTrigger(1);
+                // SetTypeMsg("alert-success");
+                // SetMsg("Welcome " + authUser.name + " !!");
+                // SetMsgTitle("Succes!");
+                // SetShowMsg(true);
+
+                sessionStorage.setItem("welcome_shown", "true");
+
+                setTimeout(() => {
+                    // SetShowMsg(false);
+                }, 1200);
+            }
+        }
+    }, [auth, dispatch]);
+
+
+    //
 
 
     useEffect(()=>{
@@ -545,7 +606,7 @@ const Homes:React.FC=()=> {
     const handleRegisterClick = () => {
         console.log("In handle click:");
         console.log("Serviciu:", keycloakServicex.keycloak);
-        keycloakServicex.register();
+        myKeycloakService.register();
 
         // ks.register();
     };
@@ -599,12 +660,20 @@ const Homes:React.FC=()=> {
 
 
         }else if(nr==0){
-            setShowLogin(1);
+            // Aici eram
+            // setShowLogin(1);
+                console.log("La login "+nr);
+                myKeycloakService.login();
+
 
         }
 
         // elm1!.style.display = 'none';
         // elm2!.style.display = 'block';
+    }
+
+    let login=async ()=>{
+
     }
 
     return (

@@ -9,10 +9,11 @@ export interface AuthState {
     roles?: string[];
 }
 
-// Am redenumit clasa pentru a se potrivi cu numele fișierului
 export class MyKeycloakService {
     keycloak: Keycloak;
     initialized: boolean = false;
+    // Adăugăm o promisiune pentru a gestiona cererile simultane de init
+    private initPromise: Promise<AuthState> | null = null;
 
     constructor() {
         const url = import.meta.env.VITE_KEYCLOAK_URL;
@@ -24,24 +25,48 @@ export class MyKeycloakService {
     }
 
     async init(): Promise<AuthState> {
-        const authenticated = await this.keycloak.init({ /* setările tale */ });
+        // SOLUȚIE PENTRU EROAREA "initialized once":
+        // Dacă deja se inițializează, returnăm promisiunea existentă
+        if (this.initPromise) return this.initPromise;
 
-        if (authenticated) {
-            const profile = await this.keycloak.loadUserProfile();
-            const state = this.getCurrentState(profile);
+        this.initPromise = (async () => {
+            try {
+                const authenticated = await this.keycloak.init({
+                    onLoad: "check-sso",
+                    pkceMethod: "S256",
+                    // SOLUȚIE PENTRU EROAREA "Checking login iframe":
+                    checkLoginIframe: false,
+                    // Silent check sso necesită un fișier html în public,
+                    // dacă nu îl ai, poți comenta linia de mai jos
+                    // silentCheckSsoRedirectUri: window.location.origin + "/ui/silent-check-sso.html",
+                });
 
-            // AICI SALVEZI MANUAL
-            localStorage.setItem("authState", JSON.stringify({
-                username: profile.username,
-                roles: state.roles,
-                authenticated: true,
-                token: state.token,
-            }));
+                this.initialized = true;
 
-            return state;
-        }
-        return { isLoading: false, isAuthenticated: false };
+                if (authenticated) {
+                    const profile = await this.keycloak.loadUserProfile();
+                    const state = this.getCurrentState(profile);
+
+                    localStorage.setItem("authState", JSON.stringify({
+                        username: profile.username,
+                        roles: state.roles,
+                        authenticated: true,
+                        token: state.token,
+                    }));
+
+                    return state;
+                }
+
+                return { isLoading: false, isAuthenticated: false };
+            } catch (error) {
+                console.error("Keycloak init failure", error);
+                return { isLoading: false, isAuthenticated: false };
+            }
+        })();
+
+        return this.initPromise;
     }
+
     private getCurrentState(profile?: KeycloakProfile): AuthState {
         const tokenParsed = this.keycloak.tokenParsed as any;
         return {
@@ -57,39 +82,35 @@ export class MyKeycloakService {
     }
 
     async login() {
+        // Folosim window.location.origin + "/ui/" ca să fim siguri că ne întoarcem unde trebuie
         await this.keycloak.login({
-            redirectUri: window.location.origin ,
+            redirectUri: window.location.origin + "/ui/",
             prompt: 'login'
         });
+        console.log(this.keycloak.token);
     }
 
     async register(): Promise<void> {
-        const redirectUri = window.location.origin ;
+        const redirectUri = window.location.origin + "/ui/";
 
-        // 1. Dacă Keycloak detectează că ești deja logat în aplicație
         if (this.keycloak.authenticated) {
-            console.log("Sesiune activă detectată. Forțăm logout înainte de register...");
-
-            // Trimitem userul la logout, dar adăugăm un parametru în URL pentru revenire
             await this.keycloak.logout({
                 redirectUri: redirectUri + "?doAction=register"
             });
             return;
         }
 
-        // 2. Dacă nu ești logat, mergem direct la Register
         await this.keycloak.login({
             action: 'register',
             redirectUri: redirectUri,
-            // 'login' forțează Keycloak să ignore orice sesiune "uitată" în cookies
             prompt: 'login'
         });
     }
 
     logout() {
+        localStorage.removeItem("authState");
         this.keycloak.logout({ redirectUri: window.location.origin + "/ui/" });
     }
 }
 
-// ACEASTA ESTE LINIA CRITICĂ: Exportăm instanța cu numele cerut de App.tsx
 export const myKeycloakService = new MyKeycloakService();
