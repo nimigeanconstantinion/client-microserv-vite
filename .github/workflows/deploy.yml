@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - feat/**
+      - fix/**
 
   workflow_dispatch:
 
