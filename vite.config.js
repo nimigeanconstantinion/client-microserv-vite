@@ -25,7 +25,8 @@ export default defineConfig({
       "host.docker.internal",
       'client',    // ✅ numele serviciului Docker pentru frontend
       'edge',
-      'react-app.local'// ✅ numele serviciului gateway Spring
+      'react-app.local',// ✅ numele serviciului gateway Spring
+      'icode.mywire.org'
     ],
   },
 });
