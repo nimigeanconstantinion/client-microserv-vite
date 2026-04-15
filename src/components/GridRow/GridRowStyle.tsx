@@ -24,7 +24,7 @@ export const WrapperRowStyle=styled.div.attrs({className:"divRow"})`
     width:100%;
     background-color: #5d6166;
     line-height: 20px;
-    height: 100%;
+    height: auto;
     margin: 0px auto;
     text-align: left;
     padding:6px 7px 6px;

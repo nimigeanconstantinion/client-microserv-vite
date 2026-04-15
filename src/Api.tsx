@@ -37,8 +37,7 @@ export default class Api{
             method,
             mode:"cors",
             headers:{
-                "Content-Type" : "application/json;charset=utf-8",
-                "Access-Control-Allow-Origin": "*",
+                "Content-Type" : "application/json;charset=utf-8"
             },
             body: body == null ? null : JSON.stringify(body)
         }
