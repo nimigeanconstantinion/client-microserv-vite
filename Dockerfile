@@ -1,7 +1,13 @@
 # imagine mică, stabilă
 FROM node:22-alpine3.19
 
+<<<<<<< HEAD
 # directorul de lucru
+=======
+FROM node:22-alpine3.21
+
+# Set the working directory in the container
+>>>>>>> feat/keycloak-vite
 WORKDIR /app
 
 # copiem doar fișierele pentru instalarea dependențelor
