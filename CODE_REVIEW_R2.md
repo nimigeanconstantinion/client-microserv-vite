@@ -448,3 +448,105 @@ Punctele 1-5 sunt cele care fac diferența între „se poate deploya" și „nu
 **Q3.** CI-ul din `data-api` face bump în `ms-gitops`, ArgoCD citește `argo-ms-gitops`, iar tag-urile din cele două coincid azi. Dacă mâine uiți să copiezi tag-ul, ArgoCD va raporta Application-urile ca **Synced**. De ce e Synced un răspuns corect din punctul lui de vedere, ce anume compară el de fapt — și ce te-ar fi anunțat, în lanțul actual, că rulează o imagine veche?
 
 **Q4.** UI-ul trimite `Authorization: Bearer <token>` către `data-service.icode.mywire.org`. Token-ul e valid, data-service e sănătos, și totuși `fetch` respinge cu o eroare de rețea fără detalii. Urmărește cererea prin nginx → oauth2-proxy → înapoi la browser și spune la care pas se pierde token-ul. De ce același token, pus în Swagger UI din browser, funcționează?
+
+---
+
+# Addendum — `master@b33e979` (2026-08-26, seara)
+
+> Verificat după merge-ul `feat/keycloak-vite` → `master` (`a6ac83c`, `b33e979`).
+> Întrebarea: **poate fi deployat?** Răspunsul e mai jos, iar de data asta e mai scurt decât la R2.
+
+## 🔴 REGRESIE — `Dockerfile` conține markeri de conflict de merge, comiși și pushați
+
+`Dockerfile:4-10`
+```dockerfile
+# imagine mică, stabilă
+FROM node:22-alpine3.19
+
+<<<<<<< HEAD
+# directorul de lucru
+=======
+FROM node:22-alpine3.21
+
+# Set the working directory in the container
+>>>>>>> feat/keycloak-vite
+WORKDIR /app
+```
+
+Merge-ul `a6ac83c` a produs un conflict în `Dockerfile`. Conflictul **nu a fost rezolvat** — `git add` + `git commit` s-au dat peste markerii lăsați de git, iar rezultatul e pe `origin/master`.
+
+Verificat prin rulare, nu prin citire:
+```
+$ docker build -t test-ui .
+Dockerfile:4
+--------------------
+   2 |     FROM node:22-alpine3.19
+   3 |
+   4 | >>> <<<<<<< HEAD
+--------------------
+ERROR: failed to build: failed to solve: dockerfile parse error on line 4: unknown instruction: <<<<<<<
+```
+
+**Ce înseamnă mecanic:** un Dockerfile e o listă de instrucțiuni, una pe linie, primul cuvânt = instrucțiunea. `<<<<<<<` nu e o instrucțiune, deci parser-ul se oprește la linia 4 — înainte să copieze un singur fișier. Nu e „build-ul iese cu warning", e **build inexistent**.
+
+Și observă ce ascundea conflictul: cele două părți se ceartă pe `alpine3.19` vs `alpine3.21` și pe limba comentariului. Nimic din substanță. Ambele variante rulează `npm run dev`. Ai pierdut master-ul pentru o ceartă între două comentarii.
+
+**Fix:** păstrezi un singur `FROM`, ștergi cele 3 linii de marker. Dar nu opri acolo — C3 din R2 e tot deschis, deci oricum rescrii fișierul în multi-stage. Rezolvă conflictul **direct în forma corectă**:
+```dockerfile
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps
+COPY . .
+RUN npm run build
+
+FROM nginx:1.27-alpine
+COPY --from=build /app/dist/ui /usr/share/nginx/html/ui
+COPY config/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+```
+
+**Regula, a doua oară în repo-ul ăsta:** înainte de commit, `git diff --cached` sau măcar `grep -rn "^<<<<<<<" .`. Un merge care „a mers" înseamnă doar că git a terminat, nu că fișierul e valid. Aceeași regulă pe care David și Stefan au primit-o pentru „Build înainte de commit" — aici e varianta ei pentru merge-uri.
+
+> Restul repo-ului e curat: markerii sunt **doar** în `Dockerfile`.
+
+## De ce nu ți-a spus CI-ul
+
+Nu există niciun run de workflow pentru `b33e979`. Ultimul run pe `master` e pentru `57d54f2` (review-ul R2), verde, iar el a publicat `ion21/client-microserv-vite:26.08.2026.16.59.16` + `latest`.
+
+Deci: **imaginea `latest` de pe Docker Hub nu mai corespunde lui `master`.** E construită dintr-un commit anterior merge-ului. Din acest moment, orice push pe `master` va da un pipeline roșu — dar `latest` va rămâne verde și înșelător, pentru că nimic nu-l retrage.
+
+Ăsta e același tipar ca gaura de la C5: starea „verde" pe care o vezi descrie un commit pe care nu-l mai ai.
+
+## Ce s-a schimbat, de fapt, față de R2
+
+`git diff 57d54f2..b33e979` = **2 fișiere**: `CODE_REVIEW.md` (adus de pe branch, review-ul R1) și `Dockerfile` (rupt).
+
+`src/`, `public/`, `package.json`, `vite.config.js`, `.env`, `.github/` — **byte-identice**. Deci toate constatările din R2 rămân valabile cuvânt cu cuvânt, verificate din nou pe `b33e979`:
+
+- `.env` e în continuare **tracked** în git, iar `.gitignore` nu-l conține
+- secretul e în continuare în toate cele 3 fișiere
+- `Home/index.tsx:67` și `Register/index.tsx:11` importă în continuare `keycloakServicex`
+
+---
+
+## Poate fi deployat? **Nu.**
+
+Trei porți, în ordine. Prima e închisă de azi.
+
+| # | Poartă | Stare | Blocant |
+|---|---|---|---|
+| 0 | **Se construiește imaginea?** | ❌ | `docker build` moare la linia 4 |
+| 1 | Imaginea e utilizabilă în cluster? | ❌ | rulează `npm run dev` (C3); URL-urile coapte în bundle (C2) → cheamă `api.react-app.local` |
+| 2 | Poate vorbi cu backendul? | ❌ | oauth2-proxy cere cookie, UI-ul trimite Bearer (C7); `APP_CORS_ALLOWED_ORIGINS` nesetat (C8); `react-client` fără redirectUri de prod (C6) |
+| — | Secretul e scos din circulație? | ❌ | nerotit, livrat la `/ui/config/config.json` (C1) |
+
+Poarta 0 e de 5 minute. Poarta 1 e C4 → C2 → C3, în ordinea asta (`KeycloakServicex` aruncă la import, deci trebuie șters **înainte** să scoți `.env`). Poarta 2 e un singur commit în `argo-ms-gitops`, care se poate face în paralel — nu depinde de nimic din UI.
+
+Traducere practică: nu e „mai avem puțin". Nu există azi niciun artefact care, pus în cluster, să afișeze ceva funcțional.
+
+## Q&A
+
+**Q5.** `git merge` a terminat fără să-ți ceară nimic, `git commit` a mers, `git push` a mers. Trei comenzi verzi la rând, și rezultatul e un fișier care nu se poate parsa. Ce anume raportează de fapt fiecare dintre cele trei că a reușit — și care era, în lanțul ăsta, primul loc unde puteai afla adevărul fără să pornești Docker?
+
+**Q6.** `latest` de pe Docker Hub e verde și construit din `57d54f2`; `master` e la `b33e979` și nu se poate construi. Dacă un ArgoCD ar fi pointat pe `latest`, ce ar raporta acum — și în ce moment ai afla că rulezi alt cod decât ce e în git? Compară cu ce ți-ar fi spus un tag = SHA.
