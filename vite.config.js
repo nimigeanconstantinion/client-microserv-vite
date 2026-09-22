@@ -19,6 +19,12 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0', // ✅ permite acces din rețeaua Docker și local
     cors: true,       // ✅ necesar pentru cereri între gateway/client
+    // Local-only stand-in for Kong's api.icode.mywire.org path split (DEPLOY_PLAN_client-vite.md B5):
+    // /api/v1/command/* -> data-service (8081), /api/v1/query -> importer-service (8082).
+    proxy: {
+      '/api/v1/command': 'http://localhost:8081',
+      '/api/v1/query': 'http://localhost:8082',
+    },
     allowedHosts: [
       'localhost', // ✅ nu pune portul, doar hostul!
       '127.0.0.1',

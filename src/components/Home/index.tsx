@@ -60,14 +60,6 @@ import {Tooltip} from "react-bootstrap";
 
 import MyTooltip from "./../OverlayMess/Index"
 import ConfirmBox from "../ConfirmBox";
-import Login from "../Login";
-import Register from "../Register";
-// import KeycloakLogin from "../auth/KeycloakLogin";
-import KeycloakLogin from "../auth/CustomLogin";
-import {keycloakServicex} from "../auth/KeycloakServicex";
-// import {myKeycloakService} from "../auth/MyKeycloakService";
-// import {AuthState} from "../auth/KeycloakServices";
-// import {KeycloakServices} from "../auth/KeycloakServices";
 import { myKeycloakService, AuthState } from "../auth/MyKeycloakService";
 import User from "../../models/User";
 // Importă acțiunile tale de Redux
@@ -91,8 +83,6 @@ const Homes:React.FC<HomeProps>=( { auth }: HomeProps)=> {
     const[psf,setpsf]=useState(0);
     const refSrc=useRef<string>("");
     const [shUtil,setShUtil]=useState(0);
-    const [showLogin,setShowLogin]=useState(0);
-    const [showRegister,setShowRegister]=useState(0);
     const storage = window.localStorage;
     const [storageL,setStorageL]=useState(0);
     const [shMess,setShMess]=useState(0);
@@ -598,83 +588,13 @@ const Homes:React.FC<HomeProps>=( { auth }: HomeProps)=> {
 
     }
 
-    // let registerThis=()=>{
-    //     console.log("In Register button");
-    //     keycloakServicex.register();
-    // }
-
-    const handleRegisterClick = () => {
-        console.log("In handle click:");
-        console.log("Serviciu:", keycloakServicex.keycloak);
-        myKeycloakService.register();
-
-        // ks.register();
+    const handleLoginClick = () => {
+        myKeycloakService.login();
     };
 
-
-
-    function showFirstDiv() {
-        const cntList=document.getElementsByClassName("serv");
-        const servC=cntList[0] as HTMLElement;
-        // elm2!.style.transition=' transform 2s';
-        //
-        // elm2!.style.transform= 'rotateY(180deg)';
-
-        setTimeout(()=>{
-            console.log("dsds");
-            // const elm=document.getElementById("secondDiv");
-            // const elm2=document.getElementById("firstDiv");
-            //
-            // const cntList=document.getElementsByClassName("serv");
-            // const servC=cntList[0] as HTMLElement;
-            servC!.style.display="inherit";
-
-            setShowLogin(0);
-            setShowRegister(0);
-
-            // console.log("Hellow in showfirstdiv");
-            // servC!.style.display="inherit";
-            // elm2!.style.display = 'inherit';
-            //
-            //
-            // elm!.style.display = 'none';
-
-        },2400);
-
-    }
-
-    let hideThis=(nr:number):void=> {
-        // const elm2=document.getElementById('secondDiv')
-
-        // const elm1=document.getElementById('firstDiv')
-        const cntList=document.getElementsByClassName("serv");
-        const servC=cntList[0] as HTMLElement;
-        // elm2!.style.transition=' transform 2s';
-        //
-        // elm2!.style.transform= 'rotateY(180deg)';
-
-        servC!.style.display="none";
-
-        if(nr>0){
-            setShowRegister(1);
-
-
-        }else if(nr==0){
-            // Aici eram
-            // setShowLogin(1);
-                console.log("La login "+nr);
-                myKeycloakService.login();
-
-
-        }
-
-        // elm1!.style.display = 'none';
-        // elm2!.style.display = 'block';
-    }
-
-    let login=async ()=>{
-
-    }
+    const handleRegisterClick = () => {
+        myKeycloakService.register();
+    };
 
     return (
             <WrapperNewHome>
@@ -747,23 +667,6 @@ const Homes:React.FC<HomeProps>=( { auth }: HomeProps)=> {
                 </div>
                 <div className={"main"}>
 
-                    {
-                        showLogin>0?(
-                            <>
-                                {/*<Login backFunction={showFirstDiv}/>*/}
-
-                                <KeycloakLogin onCancel={()=>showFirstDiv()}/>
-                            </>
-                        ):""
-                    }
-                    {
-                        showRegister>0?(
-                            <>
-                                <Register backFunction={showFirstDiv}/>
-                            </>
-                        ):""
-                    }
-                    {/*<Login/>*/}
                     <div className={"serv"}>
                         <div className={"divcq"}>
                             <div className={"divfq"}>
@@ -827,7 +730,7 @@ const Homes:React.FC<HomeProps>=( { auth }: HomeProps)=> {
                                 </div>
                                 <div className={"dbackqLogin cmddiv"}>
                                     <div className={"card-header"}>Login Actions</div>
-                                    <button type={"button"} className={"btn btn-success"} onClick={()=>hideThis(0)}>Login</button>
+                                    <button type={"button"} className={"btn btn-success"} onClick={handleLoginClick}>Login</button>
 
                                 </div>
                             </div>
@@ -847,7 +750,6 @@ const Homes:React.FC<HomeProps>=( { auth }: HomeProps)=> {
                                 </div>
                                 <div className={"dbackqLogin cmddiv"}>
                                     <div className={"card-header"}>Regsiter Action</div>
-                                    {/*<button type={"button"} className={"btn btn-success"} onClick={()=>hideThis(1)}>Register</button>*/}
                                     <button type={"button"} className={"btn btn-success"} onClick={handleRegisterClick}>Register</button>
 
                                 </div>

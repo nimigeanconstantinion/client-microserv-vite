@@ -1,61 +1,68 @@
-name: CD - Deploy Client-service API
+name: CI/CD
 
 on:
   push:
-    branches:
-      - master
-      - feat/**
-      - fix/**
-
+    branches: [ master ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-  packages: write
+env:
+  IMAGE: ion21/client-vite
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set build number
-        id: build-number
-        run: echo "BUILD_NUMBER=$(date '+%d.%m.%Y.%H.%M.%S')" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: npm }
+      - run: npm ci
+      - run: npm run build          # fails the pipeline on a broken build
 
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
+  publish:
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.sha7 }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: echo "sha7=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.meta.outputs.sha7 }}
+            ${{ env.IMAGE }}:latest
 
-      - name: Docker Build and push
+  cd-bump:                            # închide bucla CI -> CD
+    needs: publish
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: nimigeanconstantinion/argo-ms-gitops
+          ref: master
+          token: ${{ secrets.GITOPS_PAT }}
+      - name: Bump image tag în gitops
+        env:
+          VALUES: business/app-microservices/client-vite/values.yaml
         run: |
-          chmod +x ci/build-publish.sh
-          USERNAME=ion21 \
-          REPO=client-microserv-vite \
-          TAG=${{ env.BUILD_NUMBER }} \
-          ci/build-publish.sh ./
-#
-#  update-docker-compose:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout other repository
-#        uses: actions/checkout@v2
-#        with:
-#          repository: 'nimigeanconstantinion/docker-compose-microservices'
-#          token: ${{ secrets.DEPLOY_ACCESS_TOKEN }}
-#          path: 'docker-compose-microservices'
-#
-#      - name: Update and commit app version in docker-compose.yaml in other repository
-#        run: |
-#            cd docker-compose-microservices/
-#            echo -e "Current ./docker-compose.yaml\n$(cat docker-compose.yaml)"
-#            sed -i -E 's_(ion21/client-service:)([^"]*)_\1'${{ env.BUILD_NUMBER }}'_' docker-compose.yaml
-#            echo -e "Updated ./docker-compose.yaml\n$(cat docker-compose.yaml)"
-#            git config user.name github-actions
-#            git config user.email github-actions@github.com
-#            git add .
-#            git commit -m "new app version: ${{ env.BUILD_NUMBER }}"
-#            git push origin HEAD:master
+          test -f "$VALUES" || { echo "::error::$VALUES nu există în argo-ms-gitops — refactor nepushuit?"; exit 1; }
+          sed -i -E "s|^(  tag: ).*|\1${{ needs.publish.outputs.tag }}|" "$VALUES"
+          git config user.name  "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "Tag deja ${{ needs.publish.outputs.tag }} — nimic de comis."
+            exit 0
+          fi
+          git commit -am "ci: client-vite -> ${{ needs.publish.outputs.tag }}"
+          git push

@@ -1,12 +1,10 @@
 import MapStocOtim from "./models/MapStocOtim";
 import HttpResponse from "./models/HttpResponse";
-import User from "./models/User";
 // import {getEnvVariables} from "./utility/envUtils";
 // asta era  import {globalConfig, loadConfig} from './config/configLoader';
 // let env = getEnvVariables();
 import {AppConfig} from "./models/AppConfig";
 import {loadConfig} from "./utile/utile";
-import RegisterUser from "./models/RegisterUser";
 
 export default class Api{
 
@@ -81,7 +79,7 @@ export default class Api{
     queryGetAllMapStoc = async (tokenString:string): Promise<MapStocOtim[]> => {
 
         // let data = await this.api("/qallmap", "GET", null,tokenString);
-        let data = await this.api("/query", "GET", null,tokenString);
+        let data = await this.api("/api/v1/query", "GET", null,tokenString);
         if(data.status===200){
             return await data.json();
         }else {
@@ -93,7 +91,7 @@ export default class Api{
     comGetAllMapStoc = async (tokenString:string): Promise<MapStocOtim[]> => {
 
         // let data = await this.api("/comallmap", "GET", null,tokenString);
-        let data = await this.api("/command/getallmap", "GET", null,tokenString);
+        let data = await this.api("/api/v1/command/getallmap", "GET", null,tokenString);
 
 
         if(data.status===200){
@@ -105,28 +103,10 @@ export default class Api{
     }
 
 
-    registerUser = async (newUser:RegisterUser): Promise<String> => {
-
-        // let data = await this.api("/comallmap", "GET", null,tokenString);
-        let data = await this.api("/auth/register", "POST", newUser,null);
-
-        console.log("Raspuns din API");
-        console.log(data);
-        console.log("--------------------------------");
-
-        if(data.status===200){
-            return "OK REGISTER";
-        }else {
-            return Promise.reject([]);
-        }
-
-    }
-
-
     bulkAddMapStoc = async (newProd:MapStocOtim[],tokenString:string): Promise<boolean> => {
 
         // let data = await this.api("/addbulk", "POST", newProd,tokenString);
-        let data = await this.api("/command/bulk", "POST", newProd,tokenString);
+        let data = await this.api("/api/v1/command/bulk", "POST", newProd,tokenString);
 
         if(data.status===200){
             return data.json();
@@ -139,7 +119,7 @@ export default class Api{
     updMapStoc = async (newProd:MapStocOtim,tokenString:string): Promise<boolean> => {
 
         // let data = await this.api("/upd", "POST", newProd,tokenString);
-        let data = await this.api("/command/update", "POST", newProd,tokenString);
+        let data = await this.api("/api/v1/command/update", "POST", newProd,tokenString);
 
 
         if(data.status===200){
@@ -154,46 +134,13 @@ export default class Api{
     delMapStoc = async (delProd:string,tokenString:string): Promise<boolean> => {
 
         // let data = await this.api("/del/"+delProd, "DELETE", null,tokenString);
-        let data = await this.api("/command/del/"+delProd, "DELETE", null,tokenString);
+        let data = await this.api("/api/v1/command/del/"+delProd, "DELETE", null,tokenString);
 
         if(data.status===200){
             console.log("am primit status ok pentru "+delProd);
             return data.json();
         }else {
             return Promise.reject([]);
-        }
-
-    }
-
-    login=async (user:User):Promise<User>=>{
-        // let x=loadConfig()
-        console.log("La LOGIN cu ");
-        // console.log(globalConfig!.apiUrl);
-        let response:HttpResponse<string>=await this.api("/login","POST", user,null);
-        // let response:HttpResponse<string>=await this.api("http://localhost:8080/api/v1/server/login","POST", user,null);
-
-        console.log(response);
-
-
-        if(response.status===200){
-
-             return response.json();
-        }else{
-
-             return Promise.reject("Eroare de logare")
-        }
-
-    }
-
-    register=async (user:User):Promise<string>=>{
-        let response:HttpResponse<string>=await this.api<string,User>("/register","POST", user,null);
-        alert("INNNNNNNN REGISTER")
-        if(response.status===200){
-
-            return response.text();
-        }else{
-
-            return Promise.reject("Register Error!!")
         }
 
     }

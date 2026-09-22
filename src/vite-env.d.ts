@@ -1,7 +1,3 @@
-VITE_API_URL='http://localhost/kong'
-VITE_KEYCLOAK_URL='http://localhost/keycloak'
-VITE_KEYCLOAK_SECRET="Gyu02seUdOEgZ2hpjeeXx4O9vDg9PwW6"
-
 interface ImportMeta {
     readonly env: ImportMetaEnv
 }
